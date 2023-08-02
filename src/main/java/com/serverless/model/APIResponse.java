@@ -1,10 +1,21 @@
 package com.serverless.model;
 
 public class APIResponse {
+
+    private int statusCode;
     private String message;
 
-    public APIResponse(String message) {
+    public APIResponse(int statusCode, String message) {
+        this.statusCode = statusCode;
         this.message = message;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
     public String getMessage() {

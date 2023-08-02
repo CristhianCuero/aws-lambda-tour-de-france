@@ -29,7 +29,7 @@ provider:
 # Environment Variables
   environment:
     REGION: ${opt:region, self:provider.region}
-    FINISHERS_TABLE: javatodev-finishers-${opt:stage, self:provider.stage}
+    FINISHERS_TABLE: ${opt:stage, self:provider.stage}-tourdefrance-finishers-tb
 
 # IAM Role
   iam:
@@ -44,6 +44,7 @@ provider:
             - dynamoDB:PutItem
             - dynamoDB:UpdateItem
             - dynamoDB:DeleteItem
+            - dynamodb:DescribeTable
           Resource:
             - !GetAtt FinishersDynamoDBTable.Arn
 
@@ -52,11 +53,11 @@ package:
   artifact: build/distributions/aws-lambda-tour-de-france.zip
 
 functions:
-  base_api:
+  health:
     handler: com.serverless.Handler
     events:
       - httpApi:
-          path: /
+          path: /health
           method: get
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
