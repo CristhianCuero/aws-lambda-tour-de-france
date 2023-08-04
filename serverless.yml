@@ -30,6 +30,7 @@ provider:
   environment:
     REGION: ${opt:region, self:provider.region}
     FINISHERS_TABLE: ${opt:stage, self:provider.stage}-tourdefrance-finishers-tb
+    STAGES_TABLE: ${opt:stage, self:provider.stage}-tourdefrance-stages-tb
 
 # IAM Role
   iam:
@@ -46,7 +47,8 @@ provider:
             - dynamoDB:DeleteItem
             - dynamodb:DescribeTable
           Resource:
-            - !GetAtt FinishersDynamoDBTable.Arn
+            - arn:aws:dynamodb:us-east-1:560077218111:table/dev-tourdefrance-finishers-tb
+            - arn:aws:dynamodb:us-east-1:560077218111:table/dev-tourdefrance-stages-tb
 
 # Packaging Information
 package:
@@ -59,6 +61,13 @@ functions:
       - httpApi:
           path: /health
           method: get
+  rankings:
+    handler: com.serverless.rider.ReadHandler
+    events:
+      - httpApi:
+          path: /rankings
+          method: get
+    timeout: 10
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -100,23 +109,6 @@ functions:
 #      variable2: value2
 
 # CloudFormation Resource Templates
-resources:
-  Resources:
-    FinishersDynamoDBTable:
-      Type: "AWS::DynamoDB::Table"
-      Properties:
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: "id"
-            AttributeType: "S"
-        KeySchema:
-          - AttributeName: "id"
-            KeyType: "HASH"
-        StreamSpecification:
-          StreamViewType: "NEW_AND_OLD_IMAGES"
-        TableName: ${self:provider.environment.FINISHERS_TABLE}
-
-
 #    NewResource:
 #      Type: AWS::S3::Bucket
 #      Properties:

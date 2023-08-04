@@ -16,6 +16,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayResponse> {
     private AmazonDynamoDB amazonDynamoDB;
     private final String FINISHERS_DB_TABLE = System.getenv("FINISHERS_TABLE");
+    private final String STAGES_DB_TABLE = System.getenv("STAGES_TABLE");
     private final Regions REGION = Regions.fromName(System.getenv("REGION"));
     private static final Logger log = Logger.getLogger(Handler.class);
 
@@ -23,7 +24,8 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
     public ApiGatewayResponse handleRequest(Map<String, Object> input, Context context) {
         log.info("Incoming health request");
         this.initDynamoDbClient();
-        getTables();
+        checkTableConn(FINISHERS_DB_TABLE);
+        checkTableConn(STAGES_DB_TABLE);
         return ApiGatewayResponse.builder()
                 .setStatusCode(HttpStatus.SC_OK)
                 .setHeaders(Collections.singletonMap("Content-Type", "application/json"))
@@ -31,8 +33,8 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
                 .build();
     }
 
-    private DescribeTableResult getTables() {
-        return this.amazonDynamoDB.describeTable(this.FINISHERS_DB_TABLE);
+    private DescribeTableResult checkTableConn(String table) {
+        return this.amazonDynamoDB.describeTable(table);
     }
 
     private void initDynamoDbClient() {
