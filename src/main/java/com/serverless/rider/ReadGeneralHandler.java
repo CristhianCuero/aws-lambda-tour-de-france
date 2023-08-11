@@ -3,7 +3,6 @@ package com.serverless.rider;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.serverless.ApiGatewayResponse;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.serverless.model.RiderDTO;
 import org.apache.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -21,14 +20,14 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ReadGeneralHandler implements RequestHandler<APIGatewayProxyRequestEvent, ApiGatewayResponse> {
+public class ReadGeneralHandler implements RequestHandler<Map<String, Object> , ApiGatewayResponse> {
 
     private DynamoDbClient dynamoDbClient;
     private final String FINISHERS_DB_TABLE = System.getenv("FINISHERS_TABLE");
     private static final Logger log = Logger.getLogger(ReadGeneralHandler.class);
 
     @Override
-    public ApiGatewayResponse handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    public ApiGatewayResponse handleRequest(Map<String, Object>  input, Context context) {
         log.info("General request");
         initDynamoDbClient();
         List<RiderDTO> riders = new ArrayList<>();

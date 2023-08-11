@@ -1,6 +1,6 @@
 service: aws-lambda-tour-de-france
 # app and org for use with dashboard.serverless.com
-app: aws-lambda-tour-de-france
+app: aws-tour-de-france
 org: criscuero
 
 # Serverless version
@@ -17,8 +17,12 @@ provider:
     REGION: ${opt:region, self:provider.region}
     FINISHERS_TABLE: ${opt:stage, self:provider.stage}-tourdefrance-finishers-tb
     STAGES_TABLE: ${opt:stage, self:provider.stage}-tourdefrance-stages-tb
+    API_AUTHORIZER: ${opt:stage, self:provider.stage}-tourdefrance-authorizers
+    COGNITO_USER_POOL: ${opt:stage, self:provider.stage}-tourdefrance-cognito-up
+    COGNITO_DOMAIN: ${opt:stage, self:provider.stage}-auth-tour-de-france
+    COGNITO_CLIENT: ${opt:stage, self:provider.stage}-tour-de-france-cogclient
 
-# IAM Role
+  # IAM Role
   iam:
     role:
       statements:
@@ -49,20 +53,109 @@ functions:
   health:
     handler: com.serverless.Handler
     events:
-      - httpApi:
+      - http:
           path: /health
           method: get
+          integration: lambda
+          authorizer:
+            name: ${self:provider.environment.API_AUTHORIZER}
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+            scopes:
+              - tour-de-france/read:health-status
   rankings:
     handler: com.serverless.rider.ReadGeneralHandler
     events:
-      - httpApi:
+      - http:
           path: /rankings
           method: get
+          integration: lambda
+          authorizer:
+            name: ${self:provider.environment.API_AUTHORIZER}
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+            scopes:
+              - tour-de-france/read:general-results
     timeout: 10
   rankings_stage:
     handler: com.serverless.rider.ReadStageHandler
     events:
-      - httpApi:
+      - http:
           path: /rankings/{stage}
           method: get
+          integration: lambda
+          authorizer:
+            name: ${self:provider.environment.API_AUTHORIZER}
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+            scopes:
+              - tour-de-france/read:stage-results
     timeout: 10
+
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: 'AWS::Cognito::UserPool'
+      Properties:
+        UserPoolName: ${self:provider.environment.COGNITO_USER_POOL}
+        UsernameConfiguration:
+          CaseSensitive: false
+        AutoVerifiedAttributes:
+            - 'email'
+        MfaConfiguration: OFF
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 6
+            RequireLowercase: false
+            RequireNumbers: false
+            RequireSymbols: false
+            RequireUppercase: false
+            TemporaryPasswordValidityDays: 365
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Mutable: false
+            Required: true
+          - Name: name
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+
+    CognitoUserPoolResourceServer:
+      Type: AWS::Cognito::UserPoolResourceServer
+      Properties:
+        Identifier: tour-de-france
+        Name: ${opt:stage, self:provider.stage} Tour de France API
+        Scopes:
+          - ScopeName: read:health-status
+            ScopeDescription: Access to the health endpoint to check the operational status and health of the API.
+          - ScopeName: read:general-results
+            ScopeDescription: Access to view the general result table of the Tour de France, including overall standings of cyclists.
+          - ScopeName: read:stage-results
+            ScopeDescription: Permission to retrieve detailed results for each stage of the Tour de France.
+        UserPoolId: !Ref CognitoUserPool
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:provider.environment.COGNITO_CLIENT}
+        UserPoolId: !Ref CognitoUserPool
+        AllowedOAuthFlowsUserPoolClient: true
+#        CallbackURLs:
+#          - http://localhost:3000
+        AllowedOAuthFlows:
+          - client_credentials
+        AllowedOAuthScopes:
+          - tour-de-france/read:health-status
+          - tour-de-france/read:general-results
+          - tour-de-france/read:stage-results
+        GenerateSecret: true
+        PreventUserExistenceErrors: ENABLED
+        SupportedIdentityProviders:
+          - COGNITO
+
+    CognitoUserPoolDomain:
+      Type: AWS::Cognito::UserPoolDomain
+      Properties:
+        Domain: ${self:provider.environment.COGNITO_DOMAIN}
+        UserPoolId: !Ref CognitoUserPool

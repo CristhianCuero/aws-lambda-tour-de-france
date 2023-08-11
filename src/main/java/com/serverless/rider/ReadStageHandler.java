@@ -3,6 +3,7 @@ package com.serverless.rider;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.serverless.ApiGatewayResponse;
 import com.serverless.model.APIResponse;
 import com.serverless.model.RiderDTO;
@@ -19,7 +20,7 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 import java.util.*;
 
-public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEvent, ApiGatewayResponse> {
+public class ReadStageHandler implements RequestHandler<APIGatewayV2HTTPEvent, ApiGatewayResponse> {
 
 
     private DynamoDbClient dynamoDbClient;
@@ -27,7 +28,7 @@ public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEv
     private static final Logger log = Logger.getLogger(ReadStageHandler.class);
 
     @Override
-    public ApiGatewayResponse handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    public ApiGatewayResponse handleRequest(APIGatewayV2HTTPEvent input, Context context) {
         String stage = input.getPathParameters().get("stage");
         log.info("Stage request--> " + stage);
 
