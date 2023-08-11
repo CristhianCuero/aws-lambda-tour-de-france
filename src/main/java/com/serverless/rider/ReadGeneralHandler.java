@@ -2,7 +2,10 @@ package com.serverless.rider;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.serverless.ApiGatewayResponse;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.serverless.model.RiderDTO;
 import org.apache.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -20,15 +23,18 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ReadGeneralHandler implements RequestHandler<Map<String, Object> , ApiGatewayResponse> {
+public class ReadGeneralHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private DynamoDbClient dynamoDbClient;
     private final String FINISHERS_DB_TABLE = System.getenv("FINISHERS_TABLE");
     private static final Logger log = Logger.getLogger(ReadGeneralHandler.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public ApiGatewayResponse handleRequest(Map<String, Object>  input, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent  input, Context context) {
         log.info("General request");
+        log.info("EVENT TYPE: " + input.getClass().toString());
+        log.info(input);
         initDynamoDbClient();
         List<RiderDTO> riders = new ArrayList<>();
 
@@ -41,11 +47,18 @@ public class ReadGeneralHandler implements RequestHandler<Map<String, Object> , 
             riders.add(mapToDto(item));
         }
         riders.sort(Comparator.comparing(RiderDTO::getRank));
-        log.info("count:" + riders.size());
-        return ApiGatewayResponse.builder()
-                .setHeaders(Collections.singletonMap("Content-Type", "application/json"))
-                .setObjectBody(riders)
-                .setStatusCode(HttpStatusCode.OK).build();
+        //log.info("count:" + riders.size());
+
+        APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
+        responseEvent.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
+        responseEvent.setStatusCode(HttpStatusCode.OK);
+        responseEvent.setIsBase64Encoded(false);
+        try {
+            responseEvent.setBody(objectMapper.writeValueAsString(riders));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return responseEvent;
     }
 
 
@@ -56,10 +69,9 @@ public class ReadGeneralHandler implements RequestHandler<Map<String, Object> , 
         riderDTO.setRank(Integer.parseInt(item.get("Rank").n()));
         riderDTO.setTeam(item.get("Team").s());
         riderDTO.setTime(item.get("Time").s());
-        log.info(riderDTO);
+        //log.info(riderDTO);
         return riderDTO;
     }
-
 
     private void initDynamoDbClient() {
         this.dynamoDbClient = DynamoDbClient.builder()

@@ -2,7 +2,7 @@ package com.serverless;
 
 import java.util.Collections;
 import java.util.Map;
-import com.serverless.model.APIResponse;
+
 import org.apache.log4j.Logger;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -29,7 +29,7 @@ public class Handler implements RequestHandler<Map<String, Object>, ApiGatewayRe
         return ApiGatewayResponse.builder()
                 .setStatusCode(HttpStatusCode.OK)
                 .setHeaders(Collections.singletonMap("Content-Type", "application/json"))
-                .setObjectBody(new APIResponse(HttpStatusCode.OK, "UP"))
+                .setObjectBody("UP")
                 .build();
     }
 
