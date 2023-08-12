@@ -12,7 +12,7 @@ provider:
   stage: dev
   region: us-east-1
 
-# Environment Variables
+  # Environment Variables
   environment:
     REGION: ${opt:region, self:provider.region}
     FINISHERS_TABLE: ${opt:stage, self:provider.stage}-tourdefrance-finishers-tb
@@ -56,7 +56,8 @@ functions:
       - http:
           path: /health
           method: get
-#          integration: lambda
+          operationId: health-status
+          cors: true
           authorizer:
             name: ${self:provider.environment.API_AUTHORIZER}
             type: COGNITO_USER_POOLS
@@ -69,8 +70,8 @@ functions:
       - http:
           path: /rankings
           method: get
+          operationId: general-results
           cors: true
-#          integration: lambda
           authorizer:
             name: ${self:provider.environment.API_AUTHORIZER}
             type: COGNITO_USER_POOLS
@@ -84,12 +85,12 @@ functions:
       - http:
           path: /rankings/{stage}
           method: get
+          operationId: stage-results
           request:
             parameters:
               paths:
                 stage: true
           cors: true
-#          integration: lambda
           authorizer:
             name: ${self:provider.environment.API_AUTHORIZER}
             type: COGNITO_USER_POOLS
@@ -107,7 +108,7 @@ resources:
         UsernameConfiguration:
           CaseSensitive: false
         AutoVerifiedAttributes:
-            - 'email'
+          - 'email'
         MfaConfiguration: OFF
         Policies:
           PasswordPolicy:
@@ -147,8 +148,6 @@ resources:
         ClientName: ${self:provider.environment.COGNITO_CLIENT}
         UserPoolId: !Ref CognitoUserPool
         AllowedOAuthFlowsUserPoolClient: true
-#        CallbackURLs:
-#          - http://localhost:3000
         AllowedOAuthFlows:
           - client_credentials
         AllowedOAuthScopes:

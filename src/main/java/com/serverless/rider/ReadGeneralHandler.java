@@ -44,10 +44,10 @@ public class ReadGeneralHandler implements RequestHandler<APIGatewayProxyRequest
 
         ScanResponse response = dynamoDbClient.scan(scanRequest);
         for (Map<String, AttributeValue> item : response.items()) {
-            riders.add(mapToDto(item));
+            riders.add(RiderDTO.mapToDto(item));
         }
         riders.sort(Comparator.comparing(RiderDTO::getRank));
-        //log.info("count:" + riders.size());
+        log.info("count:" + riders.size());
 
         APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
         responseEvent.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
@@ -60,19 +60,6 @@ public class ReadGeneralHandler implements RequestHandler<APIGatewayProxyRequest
         }
         return responseEvent;
     }
-
-
-    private RiderDTO mapToDto(Map<String, AttributeValue> item) {
-        RiderDTO riderDTO = new RiderDTO();
-        riderDTO.setId(item.get("id").s());
-        riderDTO.setName(item.get("Rider").s());
-        riderDTO.setRank(Integer.parseInt(item.get("Rank").n()));
-        riderDTO.setTeam(item.get("Team").s());
-        riderDTO.setTime(item.get("Time").s());
-        //log.info(riderDTO);
-        return riderDTO;
-    }
-
     private void initDynamoDbClient() {
         this.dynamoDbClient = DynamoDbClient.builder()
                 .region(Region.of(System.getenv("REGION")))

@@ -6,7 +6,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.serverless.ApiGatewayResponse;
 import com.serverless.model.RiderDTO;
 import org.apache.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -39,11 +38,8 @@ public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEv
         log.info("Stage request");
         log.info("EVENT TYPE: " + event.getClass().toString());
         log.info(event);
-        //log.info(event.keySet());
-        ///log.info(event.values());
+
         String stage = event.getPathParameters().get("stage");
-
-
         initDynamoDbClient();
         List<RiderDTO> riders = new ArrayList<>();
 
@@ -70,7 +66,7 @@ public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEv
 
         if (response.count()>0) {
             for (Map<String, AttributeValue> item : response.items()) {
-                riders.add(mapToDto(item));
+                riders.add(RiderDTO.mapToDto(item));
             }
             riders.sort(Comparator.comparing(RiderDTO::getRank));
             log.info("count:" + riders.size());
@@ -95,20 +91,6 @@ public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEv
             return responseEvent;
         }
     }
-
-
-    private RiderDTO mapToDto(Map<String, AttributeValue> item) {
-        RiderDTO riderDTO = new RiderDTO();
-        riderDTO.setId(item.get("id").s());
-        riderDTO.setName(item.get("Rider").s());
-        riderDTO.setRank(Integer.parseInt(item.get("Rank").n()));
-        riderDTO.setTeam(item.get("Team").s());
-        riderDTO.setTime(item.get("Time").s());
-        log.info(riderDTO);
-        return riderDTO;
-    }
-
-
     private void initDynamoDbClient() {
         this.dynamoDbClient = DynamoDbClient.builder()
                 .region(Region.of(System.getenv("REGION")))

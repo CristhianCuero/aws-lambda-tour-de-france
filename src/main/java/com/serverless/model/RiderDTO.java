@@ -1,5 +1,9 @@
 package com.serverless.model;
 
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+
+import java.util.Map;
+
 public class RiderDTO {
 
     private String id;
@@ -46,6 +50,16 @@ public class RiderDTO {
 
     public void setTeam(String team) {
         this.team = team;
+    }
+
+    public static RiderDTO mapToDto(Map<String, AttributeValue> item) {
+        RiderDTO riderDTO = new RiderDTO();
+        riderDTO.setId(item.get("id").s());
+        riderDTO.setName(item.get("Rider").s());
+        riderDTO.setRank(Integer.parseInt(item.get("Rank").n()));
+        riderDTO.setTeam(item.get("Team").s());
+        riderDTO.setTime(item.get("Time").s());
+        return riderDTO;
     }
 
     @Override
