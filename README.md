@@ -12,6 +12,15 @@ To deploy and use the AWS Lambda Tour de France service, follow these steps:
 3. Deploy the service to AWS:
    ```shell
    serverless deploy
+   
+# Project Structure
+The "Tour de France API" follows a basic AWS Lambda Serverless application structure:
+
+- `com.serverless package`: This package serves as the core for all the source code of the project.
+
+- `serverless.yml`: This YAML file is used to configure the serverless application infrastructure. It defines API paths, resources, environment variables, permissions, and more. The serverless CLI utilizes this file to set up the CloudFormation instructions for the application.
+
+- `Handler`: Handlers can be created and linked in the serverless.yml file with API endpoints (optional). These handlers act as the entry points for the serverless API, allowing you to define the behavior for various endpoints.
 
 # Tour de France API Endpoints
 

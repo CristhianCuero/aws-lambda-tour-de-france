@@ -55,11 +55,16 @@ public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEv
         Map<String, Condition> conditionMap = new HashMap<>();
         conditionMap.put("Stage", stageCondition);
 
+        Map<String, String> expressionAttributeNames = new HashMap<>();
+        expressionAttributeNames.put("#rk", "Rank");
+        expressionAttributeNames.put("#tm", "Time");
+
         QueryRequest queryRequest = QueryRequest.builder()
                 .tableName(STAGES_DB_TABLE)
                 .keyConditions(conditionMap)
                 .indexName("stage_index")
-                // .projectionExpression("Rank,Time,Rider,Team")
+                .projectionExpression("id, #rk, #tm, Rider, Team")
+                .expressionAttributeNames(expressionAttributeNames)
                 .build();
 
         QueryResponse response = dynamoDbClient.query(queryRequest);
