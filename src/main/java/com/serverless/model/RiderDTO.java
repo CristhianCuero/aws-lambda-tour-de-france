@@ -5,20 +5,10 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import java.util.Map;
 
 public class RiderDTO {
-
-    private String id;
     private int rank;
     private String name;
     private String time;
     private String team;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public int getRank() {
         return rank;
@@ -54,7 +44,6 @@ public class RiderDTO {
 
     public static RiderDTO mapToDto(Map<String, AttributeValue> item) {
         RiderDTO riderDTO = new RiderDTO();
-        riderDTO.setId(item.get("id").s());
         riderDTO.setName(item.get("Rider").s());
         riderDTO.setRank(Integer.parseInt(item.get("Rank").n()));
         riderDTO.setTeam(item.get("Team").s());
@@ -65,7 +54,6 @@ public class RiderDTO {
     @Override
     public String toString() {
         return "RiderDTO{" +
-                "id='" + id + '\'' +
                 ", rank=" + rank +
                 ", name='" + name + '\'' +
                 ", time='" + time + '\'' +

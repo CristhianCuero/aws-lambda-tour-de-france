@@ -20,7 +20,6 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +61,7 @@ public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEv
         QueryRequest queryRequest = QueryRequest.builder()
                 .tableName(STAGES_DB_TABLE)
                 .keyConditions(conditionMap)
-                .indexName("stage_index")
-                .projectionExpression("id, #rk, #tm, Rider, Team")
+                .projectionExpression("#rk, #tm, Rider, Team")
                 .expressionAttributeNames(expressionAttributeNames)
                 .build();
 
@@ -73,8 +71,7 @@ public class ReadStageHandler implements RequestHandler<APIGatewayProxyRequestEv
             for (Map<String, AttributeValue> item : response.items()) {
                 riders.add(RiderDTO.mapToDto(item));
             }
-            riders.sort(Comparator.comparing(RiderDTO::getRank));
-            log.info("count:" + riders.size());
+
             APIGatewayProxyResponseEvent responseEvent = new APIGatewayProxyResponseEvent();
             responseEvent.setHeaders(Collections.singletonMap("Content-Type", "application/json"));
             responseEvent.setStatusCode(HttpStatusCode.OK);

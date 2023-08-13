@@ -39,11 +39,6 @@ provider:
           Resource:
             - arn:aws:dynamodb:us-east-1:560077218111:table/dev-tourdefrance-finishers-tb
             - arn:aws:dynamodb:us-east-1:560077218111:table/dev-tourdefrance-stages-tb
-        - Effect: "Allow"
-          Action:
-            - dynamoDB:Query
-          Resource:
-            - arn:aws:dynamodb:us-east-1:560077218111:table/dev-tourdefrance-stages-tb/index/stage_index
 
 # Packaging Information
 package:
