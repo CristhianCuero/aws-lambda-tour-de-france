@@ -1,5 +1,11 @@
 # aws-lambda-tour-de-france
  AWS Lambda Tour de France is a serverless application built to provide comprehensive and real-time information about the Tour de France, an iconic cycling race. 
+
+
+![Cloud Architecture](https://github.com/CristhianCuero/aws-lambda-tour-de-france/assets/12468359/64a941fa-3d3e-4f24-877a-c82aef2119c9)
+
+
+ 
 ## Getting Started
 
 To deploy and use the AWS Lambda Tour de France service, follow these steps:
